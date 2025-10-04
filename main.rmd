@@ -1,0 +1,135 @@
+---
+title: "AI, democracy and misinformation"
+author: "Elisabeth Stockinger"
+date: "`r Sys.Date()`"
+output:
+  pagedown::html_paged:
+    toc: true
+    self_contained: false
+lot: false # insert a list of tables
+lof: false # insert a list of figures
+# uncomment this line to produce HTML and PDF in RStudio:
+#knit: pagedown::chrome_print
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+options(stringsAsFactors = F)       # no automatic data transformation
+options("scipen" = 100, "digits" = 4) # suppress math annotation
+```
+
+```{r, results='hide'}
+source("plots.R")
+#source("config.R")
+library(bibliometrix)
+library(ggraph)
+set.seed(7)
+```
+
+
+```{r}
+fullCorpus <- readr::read_csv("data/search_str_categorized.csv")
+table(unlist(fullCorpus$categorized))
+synonyms <- readLines("synonyms.txt")
+```
+
+General topics, area of inquiry, and methods 
+
+
+```{r}
+p <- topics_by_method(fullCorpus |> filter(categorized=="x"),
+                      grp=sym("group"), subgrp=sym("theme"), elem=sym("article"),
+                      grpnames=setNames(c("disinformation", "challenges","utility", "detection", "response"), c("A", "B", "C", "D", "E"))
+)
+
+p
+ggsave(filename="figures/topics_methods.pdf", plot=p, width=8, height=8)
+```
+
+
+Drawing the legend separately
+
+```{r}
+labels <- c(
+  "Data analysis",
+  "Conceptual, theoretical & review studies",  
+  "Human-centric empirical resaerch",
+  "Policy & governance ", 
+  "Artefact design & implementation"
+)
+method_legend(labels, "figures/method_legend.pdf", chunks = 2, ymin=.4, x=0, xjust=0)
+```
+
+
+# Bibliometrix
+
+Bibliometrix has an awkward bug where it requires M in dataframe format to be in the environment. M is used instead of the csv. So the csv is is quite useless.
+
+```{r, results='hide'}
+M <- subset(fullCorpus %>% filter(categorized=="x"), select = -c(1:11))
+df <- convert2df(file = "../search_str_categorized.csv", dbsource = "wos", format="csv", remove.duplicates = F)
+```
+
+
+
+```{r}
+options(width=100)
+res1 <- biblioAnalysis(df)
+s1 <- summary(object = res1, k = 10, pause = FALSE)
+```
+
+
+```{r}
+cbind((citations(df, field = "article"))$Cited[1:10])
+```
+
+```{r}
+p1 <- plot(res1, pause = FALSE)
+```
+
+
+# Country collaborations
+
+
+```{r}
+df <- metaTagExtraction(df, Field = "AU_CO", sep = ";")
+df <- metaTagExtraction(df, Field = "AU1_CO", sep = ";")
+df <- metaTagExtraction(df, Field = "AU_UN", sep = ";")
+df <- metaTagExtraction(df, Field = "AU1_UN", sep = ";")
+country_collaborations(df, filename="figures/chord.pdf", tofile=T)
+country_collaborations(df, filename="figures/chord.pdf", tofile=F)
+```
+
+# Keyword evolution over time
+
+
+```{r}
+source("plots.R")
+p <- keywords_over_time(df, "DE", synonyms, 15, 8)
+ggsave(filename="figures/kw_sankey.pdf", plot=p, width=10, height=7)
+p
+```
+
+# Keyword network
+```{r}
+kw_cooccurrences = biblioNetwork(df, analysis = "co-occurrences", network = "keywords", sep = ";")
+
+net = networkPlot(kw_cooccurrences, normalize = "association", weighted = T, n = 50, Title = "Keyword Co-occurrences",
+    type = "fruchterman", size = T, edgesize = 10, labelsize = .5)
+
+plot(net$cluster_obj, net$graph, vertex.label.family="Helvetica", vertex.label.font=1, vertex.label.dist=1)
+
+
+ggraph(net$graph, layout="fr") + theme()
+```
+# Thematic map
+
+```{r}
+Map <- colored_thematicMap(df, "KW_Merged", n=1000, size=.5, synonyms=synonyms)
+
+ggsave(filename="figures/thematicMap.pdf", plot=Map$colored_map)
+Map$colored_map
+```
+
+
