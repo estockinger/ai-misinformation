@@ -20,8 +20,7 @@ options("scipen" = 100, "digits" = 4) # suppress math annotation
 ```
 
 ```{r, results='hide'}
-source("plots.R")
-#source("config.R")
+source("scripts/plots.R")
 library(bibliometrix)
 library(ggraph)
 set.seed(7)
@@ -105,7 +104,6 @@ country_collaborations(df, filename="figures/chord.pdf", tofile=F)
 
 
 ```{r}
-source("plots.R")
 p <- keywords_over_time(df, "DE", synonyms, 15, 8)
 ggsave(filename="figures/kw_sankey.pdf", plot=p, width=10, height=7)
 p

@@ -7,10 +7,10 @@ library(purrr)
 library(viridis)
 library(circlize)
 library(ggsankey)
-library("ggrepel")
+library(ggrepel)
 
-source("utils.R")
-source("bibliometrix_wrapper.R")
+source("scripts/utils.R")
+source("scripts/bibliometrix_wrapper.R")
 
 colored_thematicMap <- function(df, field="KW_Merged", n=1000, minfreq=5, stemming=T, size=.1, n.labels=4, repel=T, synonyms=c(), subgraphs=T) {
   Map <- thematicMap(df, field = field, n = n, minfreq = minfreq, stemming = stemming, size = size,
