@@ -1,5 +1,5 @@
 ---
-title: "AI, democracy and misinformation"
+title: "Mapping the Entangled Landscape of AI and Misinformation"
 author: "Elisabeth Stockinger"
 date: "`r Sys.Date()`"
 output:
@@ -8,8 +8,6 @@ output:
     self_contained: false
 lot: false # insert a list of tables
 lof: false # insert a list of figures
-# uncomment this line to produce HTML and PDF in RStudio:
-#knit: pagedown::chrome_print
 ---
 
 ```{r setup, include=FALSE}
